@@ -1,133 +1,170 @@
 # ChatUI
 
-A modern, self-hosted AI chat interface powered by a provider-agnostic AI gateway.
+A modern, self-hosted AI chat interface backed by a provider-agnostic AI gateway.
 
-ChatUI brings multiple AI providers, local models, document-based conversations, web search, and image generation together behind a unified interface.
+ChatUI gives you one unified chat interface for **local llama.cpp models, OpenAI, Anthropic, Google Gemini, Groq, and custom OpenAI-compatible endpoints**, while also supporting streaming responses, document upload and RAG, web search, image generation, authentication, model selection, conversations, and Docker deployment.
 
-## Features
-
-* 🤖 **Multiple AI Providers**
-
-  * Local llama.cpp
-  * OpenAI
-  * Anthropic
-  * Google Gemini
-  * Groq
-  * Custom OpenAI-compatible APIs
-
-* 💬 **Modern AI Chat Interface**
-
-  * Streaming responses
-  * Provider-agnostic architecture
-  * Unified chat experience
-
-* 📄 **Document Upload and RAG**
-
-  * PDF support
-  * DOCX support
-  * TXT and Markdown support
-  * Local offline retrieval
-  * Optional OpenAI and Google embeddings
-
-* 🌐 **Web Search**
-
-  * Brave Search
-  * Tavily
-  * SearXNG
-
-* 🎨 **Image Generation**
-
-  * AI-powered image generation through supported providers
-
-* 🔒 **Security Features**
-
-  * Optional access-token protection
-  * Rate limiting
-  * Environment-based API key configuration
-
-* 🖥️ **Cross-Platform Support**
-
-  * Windows one-click startup
-  * macOS and Linux shell scripts
-  * Docker deployment support
+The project is designed to let you run AI locally when possible, connect cloud AI providers when needed, or combine both through a single frontend.
 
 ---
 
-## Architecture
+## Features
+
+* Modern self-hosted chat interface
+* Local AI inference with **llama.cpp**
+* OpenAI support
+* Anthropic support
+* Google Gemini support
+* Groq support
+* Custom OpenAI-compatible providers
+* Streaming AI responses
+* Document upload
+* RAG / document retrieval
+* Web search integrations
+* Image generation
+* Optional access-token authentication
+* Model selection
+* Conversations
+* Built-in rate limiting
+* Request and provider metrics
+* Structured logging
+* Docker deployment
+* Windows one-click startup/shutdown
+* Linux/macOS startup/shutdown scripts
+
+---
+
+## Project structure
 
 ```text
-ChatUI
-│
-├── app/                    # React + Vite frontend
-│
-├── chatui-backend/         # FastAPI AI gateway
-│   ├── providers/          # AI provider integrations
-│   ├── documents/          # Document processing and RAG
-│   ├── tests/              # Backend tests
-│   └── api/                # API endpoints
-│
-├── START.bat               # Windows launcher
-├── STOP.bat                # Windows shutdown script
-├── start.sh                # macOS / Linux launcher
-├── stop.sh                 # macOS / Linux shutdown script
-│
-└── docker-compose.yml      # Docker deployment
+ChatUI/
+├── app/                         React + Vite frontend
+├── chatui-backend/              FastAPI backend / AI gateway
+├── START.bat                    Windows one-click launcher
+├── STOP.bat                     Windows shutdown script
+├── start.sh                     macOS / Linux launcher
+├── stop.sh                      macOS / Linux shutdown script
+├── docker-compose.yml           Docker deployment
+├── LICENSE
+└── README.md
 ```
 
 ---
 
-# Quick Start
+## Quick start
 
-## Windows
+### 1. Clone the repository
 
-The easiest way to start ChatUI on Windows is to double-click:
+```bash
+git clone https://github.com/hxrsh7d/ChatUI.git
+cd ChatUI
+```
+
+### 2. Configure the frontend
+
+Create:
+
+```text
+app/.env.local
+```
+
+The repository includes a blank template. Add your own backend API URL:
+
+```env
+VITE_API_BASE=http://127.0.0.1:8000/api
+```
+
+For the default local setup:
+
+```text
+Frontend: http://127.0.0.1:5173
+Backend:  http://127.0.0.1:8000
+API:      http://127.0.0.1:8000/api
+```
+
+If your backend runs on a different host or port, replace the value of `VITE_API_BASE` with your own backend API URL.
+
+> **Important:** `app/.env.local` is environment-specific. Each user should configure it for their own backend installation.
+
+Do not put provider API keys, passwords, or other secrets in the frontend environment file. Provider credentials belong in:
+
+```text
+chatui-backend/.env
+```
+
+### 3. Configure the backend
+
+Create the backend environment file from the provided example.
+
+From the repository root:
+
+```bash
+cd chatui-backend
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS / Linux:
+
+```bash
+cp .env.example .env
+```
+
+Then edit:
+
+```text
+chatui-backend/.env
+```
+
+You only need to configure the providers and features you want to use.
+
+All provider API keys are optional.
+
+### 4. Start ChatUI
+
+#### Windows
+
+Double-click:
 
 ```text
 START.bat
 ```
 
-The first run automatically:
-
-1. Creates the Python virtual environment
-2. Installs backend dependencies
-3. Installs frontend dependencies
-4. Starts the backend
-5. Starts the frontend
-6. Opens ChatUI in your browser
-
-To stop ChatUI, run:
+To stop ChatUI:
 
 ```text
 STOP.bat
 ```
 
----
+The launcher automatically handles the local backend environment, backend dependencies, frontend dependencies, and startup process.
 
-## macOS / Linux
+#### macOS / Linux
 
-Make the scripts executable:
+First time only:
 
 ```bash
 chmod +x start.sh stop.sh
 ```
 
-Start ChatUI:
+Start:
 
 ```bash
 ./start.sh
 ```
 
-Stop ChatUI:
+Stop:
 
 ```bash
 ./stop.sh
 ```
 
----
+The startup scripts prepare the required dependencies on the first run and start both the backend and frontend.
 
-## Accessing ChatUI
-
-After startup, open:
+Once running, open:
 
 ```text
 http://127.0.0.1:5173/
@@ -135,120 +172,233 @@ http://127.0.0.1:5173/
 
 ---
 
-# AI Provider Configuration
+## Local llama.cpp
 
-Copy the backend environment template:
+ChatUI can use local GGUF models through **llama.cpp**.
+
+For the local provider:
+
+1. Install or build llama.cpp.
+2. Make sure `llama-server` is available to the backend.
+3. Place your GGUF models in the configured models directory.
+4. Start ChatUI.
+5. Select the available local model from the model selector.
+
+The backend automatically manages the local llama.cpp server process.
+
+### Models directory
+
+The models directory is configured through:
+
+```env
+MODELS_DIR=
+```
+
+For example:
+
+```env
+MODELS_DIR=C:\llama.cpp\models
+```
+
+The exact path depends on your local llama.cpp installation.
+
+> **Important:** GGUF model files are not included in this repository. Users must download and configure their own models.
+
+Local models can be large, so make sure your system has sufficient RAM, storage, and CPU resources for the model you choose.
+
+---
+
+## Configuring AI providers
+
+Copy:
 
 ```text
 chatui-backend/.env.example
 ```
 
-Create:
+to:
 
 ```text
 chatui-backend/.env
 ```
 
-Then configure the providers you want to use.
+Then configure whichever providers you want to use.
 
-| Provider      | Environment Variable |
-| ------------- | -------------------- |
-| OpenAI        | `OPENAI_API_KEY`     |
-| Anthropic     | `ANTHROPIC_API_KEY`  |
-| Google Gemini | `GOOGLE_API_KEY`     |
-| Groq          | `GROQ_API_KEY`       |
+You do not need to configure every provider.
 
-You can also configure:
+| Provider / feature           | Configuration                                                                                                  |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| OpenAI                       | `OPENAI_API_KEY`                                                                                               |
+| Anthropic                    | `ANTHROPIC_API_KEY`                                                                                            |
+| Google Gemini                | `GOOGLE_API_KEY`                                                                                               |
+| Groq                         | `GROQ_API_KEY`                                                                                                 |
+| Custom OpenAI-compatible API | Configure from **Settings -> Providers -> Add a custom provider**, or use `CUSTOM_OPENAI_COMPATIBLE_PROVIDERS` |
+| Web search                   | `SEARCH_PROVIDER` plus the corresponding API key or URL                                                        |
+| Image generation             | `IMAGE_PROVIDER=openai` with `OPENAI_API_KEY`                                                                  |
 
-* Custom OpenAI-compatible APIs
-* Local llama.cpp models
-* Web search providers
-* Image generation providers
-
-> **Important:** Never commit your `.env` file or API keys to GitHub.
-
----
-
-# Local llama.cpp
-
-ChatUI supports running local AI models through llama.cpp.
-
-The application can use local models while also supporting cloud-based AI providers.
-
-Configure the llama.cpp executable and model directory through your backend environment configuration.
-
----
-
-# Document RAG
-
-ChatUI supports document-based conversations through a Retrieval-Augmented Generation (RAG) pipeline.
-
-Supported formats include:
-
-* PDF
-* DOCX
-* TXT
-* Markdown
-
-The default retrieval pipeline works locally and offline.
-
-When configured, OpenAI or Google embeddings can be used to improve document retrieval quality.
-
-The retrieval pipeline includes:
+After changing:
 
 ```text
-Document Upload
-      ↓
-Text Extraction
-      ↓
-Chunking
-      ↓
-Embedding
-      ↓
-Storage
-      ↓
-Hybrid Retrieval
-      ↓
-AI Response
+chatui-backend/.env
+```
+
+restart ChatUI:
+
+Windows:
+
+```text
+STOP.bat
+START.bat
+```
+
+macOS / Linux:
+
+```bash
+./stop.sh
+./start.sh
 ```
 
 ---
 
-# Web Search
+## Provider-independent model routing
 
-ChatUI supports multiple web-search providers.
+The backend exposes a unified API to the frontend.
 
-Available options include:
+Models can be identified using either:
 
-* Brave Search
-* Tavily
-* SearXNG
+```text
+<model>
+```
 
-Configure the search provider through the backend environment file.
+or:
+
+```text
+<provider>:<model>
+```
+
+For example:
+
+```text
+openai:gpt-4o-mini
+```
+
+This allows the frontend to remain independent of the underlying AI provider.
+
+A local llama.cpp model can continue to use its model filename for backward compatibility.
 
 ---
 
-# Image Generation
+## Document upload and RAG
 
-ChatUI supports AI-powered image generation through configured providers.
+ChatUI includes a local document retrieval pipeline.
 
-For OpenAI-based image generation:
+Supported document formats include:
 
 ```text
+PDF
+DOCX
+TXT
+MD
+```
+
+The general pipeline is:
+
+```text
+Document upload
+      |
+      v
+Text extraction
+      |
+      v
+Document chunking
+      |
+      v
+Embedding
+      |
+      v
+SQLite storage
+      |
+      v
+Hybrid retrieval
+      |
+      v
+Relevant context
+      |
+      v
+AI response
+```
+
+RAG works without a cloud embedding provider by using a local offline fallback.
+
+If OpenAI or Google API credentials are configured, ChatUI can use their embedding capabilities to improve retrieval quality.
+
+The retrieval system combines:
+
+* Embedding similarity
+* BM25 lexical search
+* Reciprocal Rank Fusion
+
+This allows semantic and keyword-based retrieval to work together.
+
+---
+
+## Web search
+
+ChatUI can integrate web search through supported search providers.
+
+Configure:
+
+```env
+SEARCH_PROVIDER=
+```
+
+Supported options include:
+
+```text
+brave
+tavily
+searxng
+```
+
+Configure the corresponding API key or URL in:
+
+```text
+chatui-backend/.env
+```
+
+Web search is optional.
+
+---
+
+## Image generation
+
+ChatUI can expose image generation through a supported provider.
+
+For OpenAI image generation:
+
+```env
 IMAGE_PROVIDER=openai
 ```
 
-An appropriate provider API key must also be configured.
+and configure:
+
+```env
+OPENAI_API_KEY=your_key_here
+```
+
+Image generation is optional and depends on the configured provider.
 
 ---
 
-# Security
+## Authentication
 
-## Access Token Protection
+By default, the backend does **not** require authentication.
 
-By default, a local ChatUI installation can run without authentication.
+This is convenient when running ChatUI privately on your own machine.
 
-If you plan to expose your instance to other users or a network, configure an access token.
+However, if you expose the backend to other people or to a network, authentication should be enabled.
+
+### Enable access-token authentication
 
 Generate a secure token:
 
@@ -256,155 +406,545 @@ Generate a secure token:
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-Then add it to:
+Add it to:
 
 ```text
 chatui-backend/.env
 ```
 
-```text
-ACCESS_TOKEN=your-secure-token
+For example:
+
+```env
+ACCESS_TOKEN=your_generated_token
 ```
 
-Restart ChatUI after changing the configuration.
+Restart the backend.
 
-## Rate Limiting
+Users will be prompted for the access code when they first access ChatUI.
+
+Users can sign out and remove the stored token from:
+
+```text
+Settings -> Account
+```
+
+> **Security note:** Do not expose an unauthenticated ChatUI backend to an untrusted network.
+
+---
+
+## Rate limiting
 
 Rate limiting is enabled by default.
 
-The limits can be configured through environment variables, including:
+The default limits are:
 
 ```text
-RATE_LIMIT_ENABLED
-RATE_LIMIT_CHAT_PER_MINUTE
-RATE_LIMIT_UPLOADS_PER_MINUTE
+20 chat requests / minute / client IP
+10 uploads / minute / client IP
 ```
+
+Configuration is available in:
+
+```text
+chatui-backend/.env
+```
+
+Relevant settings include:
+
+```env
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_CHAT_PER_MINUTE=20
+RATE_LIMIT_UPLOADS_PER_MINUTE=10
+```
+
+To disable rate limiting:
+
+```env
+RATE_LIMIT_ENABLED=false
+```
+
+Rate limiting is in-memory and per-process. It resets when the backend restarts.
+
+This is intended for the project's single-backend deployment model.
 
 ---
 
-# Running Tests
+## Running the tests
 
-Navigate to the backend:
+From the repository root:
 
 ```bash
 cd chatui-backend
-```
-
-Install the development dependencies:
-
-```bash
 pip install -r requirements.txt -r requirements-dev.txt
-```
-
-Run the test suite:
-
-```bash
 pytest
 ```
 
-The project includes tests covering important backend functionality such as provider routing, document processing, RAG, authentication, rate limiting, logging, metrics, and API error handling.
+The test suite covers areas including:
+
+* Provider routing
+* Custom provider management
+* Provider persistence across restart
+* Document parsing
+* PDF/DOCX fixtures
+* Document chunking
+* Hybrid RAG retrieval
+* Embeddings
+* BM25 retrieval
+* Upload API behavior
+* Access-token enforcement
+* Rate limiting
+* Structured logging
+* Metrics
+* Chat endpoint error handling
+
+The tests do not make real network calls to cloud providers.
+
+The test configuration explicitly prevents real provider credentials from being used during the test run.
 
 ---
 
-# Observability
+## Observability
 
-ChatUI provides runtime logging and metrics.
+### Logs
 
-## Logs
-
-Runtime logs can include:
+The launcher scripts produce backend logs next to the launcher files:
 
 ```text
 chatui-backend-output.log
 chatui-backend-error.log
 ```
 
-Structured JSON logging can be enabled through the backend configuration.
+For machine-readable JSON logs:
 
-## Metrics
+```env
+LOG_FORMAT=json
+```
 
-The backend provides a metrics endpoint:
+The default format is human-readable.
+
+### Metrics
+
+ChatUI exposes:
 
 ```text
 GET /api/metrics
 ```
 
-When access-token protection is enabled, this endpoint is protected accordingly.
+When authentication is enabled, the metrics endpoint is protected by the access token.
+
+Metrics include request counts, errors, latency, and provider-level information.
+
+Metrics are stored in memory and reset when the backend restarts.
 
 ---
 
-# Docker Deployment
+## Docker deployment
 
-Create the backend environment file:
+Docker can be used to deploy ChatUI with cloud-based AI providers.
+
+> **Local llama.cpp is not included in the Docker deployment.**
+
+Start the deployment with:
 
 ```bash
 cp chatui-backend/.env.example chatui-backend/.env
 ```
 
-Configure your desired providers and API keys.
-
-Then run:
+Configure your provider credentials and then run:
 
 ```bash
 docker compose up --build
 ```
 
-After the containers start, open:
+Open:
 
 ```text
 http://localhost:5173
 ```
 
-> The current Docker configuration is intended for cloud-provider deployments. Local llama.cpp integration may require host-specific configuration outside the container environment.
+### Docker limitations
+
+The local llama.cpp integration is currently a Windows-oriented process-managed integration.
+
+It launches and manages:
+
+```text
+llama-server.exe
+```
+
+using Windows process/network management commands.
+
+Therefore, local llama.cpp inference is not included in the container image.
+
+Without local models, the Docker deployment can still use the configured cloud providers.
+
+The frontend container serves the production build through nginx.
+
+nginx proxies:
+
+```text
+/api
+/v1
+/health
+```
+
+to the backend container so the browser communicates through a single origin.
+
+> **Docker testing note:** The Docker deployment has been configured and reviewed, but it has not been validated end-to-end in an environment with a Docker daemon. Treat the first `docker compose up --build` as the real deployment test and inspect `docker compose logs` if a service does not start correctly.
 
 ---
 
-# Project Principles
+## Architecture
 
-ChatUI is designed around several principles:
+ChatUI is organized around a provider-agnostic backend.
 
-* **Provider independence**
-* **Local and cloud AI support**
-* **Simple deployment**
-* **User-controlled configuration**
-* **Privacy-friendly local capabilities**
-* **Extensible architecture**
+```text
+                    +----------------------+
+                    |      ChatUI UI       |
+                    |   React + Vite       |
+                    +----------+-----------+
+                               |
+                               | HTTP / SSE
+                               v
+                    +----------------------+
+                    |   FastAPI Backend    |
+                    |     AI Gateway       |
+                    +----------+-----------+
+                               |
+             +-----------------+-----------------+
+             |                 |                 |
+             v                 v                 v
+      +-------------+   +-------------+   +-------------+
+      | llama.cpp   |   | Cloud APIs  |   | Custom API  |
+      |   Local     |   | OpenAI etc. |   | Compatible  |
+      +------+------+   +-------------+   +-------------+
+             |
+             v
+      +--------------------+
+      | Local GGUF Models  |
+      +--------------------+
+```
 
-The frontend communicates with a unified backend API rather than directly depending on individual AI providers.
+### Provider routing
 
-This architecture makes it easier to add or change AI providers without redesigning the entire user interface.
+Model IDs are routed through the provider registry.
+
+A bare model filename routes to local llama.cpp for backward compatibility.
+
+Provider-qualified models use:
+
+```text
+<provider>:<model>
+```
+
+For example:
+
+```text
+openai:gpt-4o-mini
+```
+
+Implementation:
+
+```text
+chatui-backend/providers/registry.py
+```
+
+### RAG architecture
+
+The document pipeline is implemented under:
+
+```text
+chatui-backend/documents/
+```
+
+It performs:
+
+```text
+Upload
+  |
+  v
+Extraction
+  |
+  v
+Chunking
+  |
+  v
+Embedding
+  |
+  v
+SQLite
+  |
+  v
+Hybrid retrieval
+  |
+  v
+Context injection
+```
+
+Retrieval combines embedding similarity and BM25 lexical scoring and fuses the rankings using Reciprocal Rank Fusion.
+
+### Streaming architecture
+
+Provider adapters expose a common streaming contract.
+
+The backend emits a consistent set of SSE event types, including:
+
+```text
+token
+search_status
+citations
+image
+error
+done
+```
+
+This allows the React frontend to remain provider-agnostic while supporting different AI backends.
+
+Implementation:
+
+```text
+chatui-backend/providers/base.py
+```
 
 ---
 
-# Contributing
+## Development
 
-Contributions, suggestions, bug reports, and feature requests are welcome.
+### Frontend
 
-Before submitting changes:
+The frontend is built with:
 
-1. Test your changes locally.
-2. Avoid committing API keys or `.env` files.
-3. Follow the existing project structure.
-4. Run the test suite when modifying backend functionality.
+```text
+React
+TypeScript
+Vite
+```
+
+To work on the frontend:
+
+```bash
+cd app
+npm install
+npm run dev
+```
+
+The development server runs on:
+
+```text
+http://localhost:5173
+```
+
+The Vite development server proxies API requests to the local backend.
+
+### Backend
+
+The backend is built with:
+
+```text
+Python
+FastAPI
+```
+
+Backend development dependencies can be installed with:
+
+```bash
+cd chatui-backend
+pip install -r requirements.txt -r requirements-dev.txt
+```
+
+Run the tests with:
+
+```bash
+pytest
+```
 
 ---
 
-# License
+## Environment files
 
-This project is licensed under the MIT License.
+ChatUI uses separate environment configuration for the frontend and backend.
 
-See the [LICENSE](LICENSE) file for details.
+```text
+app/.env.local
+chatui-backend/.env
+```
+
+### Frontend
+
+```env
+VITE_API_BASE=http://127.0.0.1:8000/api
+```
+
+### Backend
+
+Copy:
+
+```text
+chatui-backend/.env.example
+```
+
+to:
+
+```text
+chatui-backend/.env
+```
+
+and configure the providers you want to use.
+
+Never publish real API keys or credentials.
 
 ---
 
-## Author
+## Troubleshooting
 
-**Harshad More**
+### ChatUI opens but cannot connect to the backend
+
+Check:
+
+```text
+app/.env.local
+```
+
+and verify:
+
+```env
+VITE_API_BASE=http://127.0.0.1:8000/api
+```
+
+Then make sure the backend is running.
+
+Check:
+
+```text
+http://127.0.0.1:8000/health
+```
+
+### Backend does not start
+
+Check the backend logs:
+
+```text
+chatui-backend-error.log
+chatui-backend-output.log
+```
+
+Also verify that Python and the required backend dependencies are installed.
+
+### Local model does not appear
+
+Check:
+
+```env
+MODELS_DIR=
+```
+
+Make sure the configured directory exists and contains compatible GGUF model files.
+
+Remember that ChatUI does not distribute GGUF models.
+
+### Cloud provider does not appear
+
+Verify that the corresponding API key is configured in:
+
+```text
+chatui-backend/.env
+```
+
+For example:
+
+```env
+OPENAI_API_KEY=your_key_here
+```
+
+Then restart ChatUI.
+
+### Frontend dependencies are missing
+
+From:
+
+```text
+app/
+```
+
+run:
+
+```bash
+npm install
+```
+
+Then restart the frontend.
 
 ---
 
-### ⚠️ Security Notice
+## Privacy and deployment model
 
-Never upload API keys, access tokens, passwords, or private environment files to a public repository.
+ChatUI can be used as a completely local interface when configured with llama.cpp and local models.
 
-Always use `.env.example` files to demonstrate configuration without exposing real credentials.
+In that configuration:
+
+```text
+User
+  |
+  v
+ChatUI
+  |
+  v
+FastAPI backend
+  |
+  v
+llama.cpp
+  |
+  v
+Local GGUF model
+```
+
+No cloud AI provider is required for local inference.
+
+When cloud providers are configured, requests intended for those providers are sent to the corresponding external service according to that provider's API behavior and your configuration.
+
+Users should review the privacy and data-handling policies of any external provider they enable.
+
+---
+
+## Project goals
+
+ChatUI is designed around a simple idea:
+
+> **One interface, multiple AI backends.**
+
+Instead of building a separate interface for every AI provider, ChatUI provides a common frontend and a provider-agnostic gateway.
+
+This makes it possible to:
+
+* Run models locally
+* Switch between AI providers
+* Add custom OpenAI-compatible endpoints
+* Use cloud AI when local inference is not practical
+* Search the web
+* Work with uploaded documents
+* Generate images
+* Keep the frontend independent from individual provider APIs
+
+---
+
+## License
+
+See [`LICENSE`](LICENSE) for the project's license.
+
+---
+
+## Repository
+
+GitHub:
+
+https://github.com/hxrsh7d/ChatUI
+
+---
+
+## Status
+
+ChatUI is an actively developed self-hosted AI interface.
+
+The local development workflow has been verified from a fresh GitHub clone, including frontend installation, backend startup, local llama.cpp integration, model loading, and AI chat functionality.
+
+Docker deployment is provided as an additional deployment option and should be tested in the target Docker environment before production use.
