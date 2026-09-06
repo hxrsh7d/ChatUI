@@ -1,0 +1,45 @@
+# Runs ChatUI as two containers: the FastAPI gateway (backend) and the
+# built React app served through nginx (frontend), which proxies API
+# traffic to the backend by its Compose service name.
+#
+# NOTE: local llama.cpp is NOT part of this setup -- see
+# chatui-backend/Dockerfile for why. This is the right shape for a
+# cloud-provider-only deployment (OpenAI/Anthropic/Google/Groq/custom).
+#
+# Usage:
+#   1. cp chatui-backend/.env.example chatui-backend/.env and fill in the
+#      provider keys you want, plus ACCESS_TOKEN if sharing this instance.
+#   2. docker compose up --build
+#   3. Open http://localhost:5173
+#
+# This compose file has not been run in this environment (no Docker
+# daemon was available) -- see the project notes for what has and hasn't
+# been verified.
+
+services:
+  backend:
+    build:
+      context: ./chatui-backend
+    env_file:
+      - ./chatui-backend/.env
+    volumes:
+      - chatui_backend_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./app
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  chatui_backend_data:

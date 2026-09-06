@@ -1,0 +1,7 @@
+# Install with: pip install -r requirements.txt -r requirements-dev.txt
+# These are only needed to run the test suite (pytest chatui-backend), never
+# to run the app itself -- kept separate so a normal install/deploy doesn't
+# pull in test-only tooling.
+pytest>=8.0
+pytest-asyncio>=0.24
+reportlab>=4.0
